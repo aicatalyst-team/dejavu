@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dejavu-core
+  namespace: dejavu
+  labels:
+    app.kubernetes.io/name: dejavu-core
+    app.kubernetes.io/part-of: dejavu
+    app.kubernetes.io/managed-by: autopoc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: dejavu-core
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: dejavu-core
+        app.kubernetes.io/part-of: dejavu
+    spec:
+      containers:
+        - name: dejavu-core
+          image: quay.io/aicatalyst/dejavu-dejavu-core:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8765
+              protocol: TCP
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: dejavu-core-secrets
+                  key: OPENAI_API_KEY
+            - name: OPENAI_BASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: dejavu-core-secrets
+                  key: OPENAI_BASE_URL
+            - name: DEJAVU_DIR
+              value: "/opt/app-root/src/.dejavu"
+          volumeMounts:
+            - name: dejavu-data
+              mountPath: /opt/app-root/src/.dejavu
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8765
+            initialDelaySeconds: 10
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8765
+            initialDelaySeconds: 15
+            periodSeconds: 10
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            capabilities:
+              drop:
+                - ALL
+      volumes:
+        - name: dejavu-data
+          persistentVolumeClaim:
+            claimName: dejavu-core-data
