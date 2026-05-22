@@ -1,0 +1,34 @@
+FROM registry.access.redhat.com/ubi9/python-312
+
+WORKDIR /opt/app-root/src
+
+# Copy dependency manifest first for better layer caching
+COPY pyproject.toml ./
+
+# Install the build backend so pip can build from source
+RUN pip install --no-cache-dir hatchling
+
+# Copy full project source
+COPY . .
+
+# Install dejavu-memory package (core deps only — no optional extras needed for PoC)
+RUN pip install --no-cache-dir .
+
+# Create the dejavu data directory for SQLite storage
+# Use DEJAVU_DIR so the app doesn't depend on $HOME resolution
+ENV DEJAVU_DIR=/opt/app-root/src/.dejavu
+
+USER 0
+RUN mkdir -p /opt/app-root/src/.dejavu && \
+    chgrp -R 0 /opt/app-root && \
+    chmod -R g=u /opt/app-root
+USER 1001
+
+# Environment variables — provided at runtime via K8s secret/configmap
+ENV OPENAI_API_KEY=""
+ENV OPENAI_BASE_URL=""
+
+EXPOSE 8765
+
+ENTRYPOINT ["dejavu"]
+CMD ["serve", "--host", "0.0.0.0", "--port", "8765"]
