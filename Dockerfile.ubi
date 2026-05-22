@@ -2,11 +2,8 @@ FROM registry.access.redhat.com/ubi9/python-312
 
 WORKDIR /opt/app-root/src
 
-# Copy dependency manifest first for better layer caching
-COPY pyproject.toml ./
-
-# Install the build backend so pip can build from source
-RUN pip install --no-cache-dir hatchling
+# Copy dependency manifest and README (required by hatchling build) for layer caching
+COPY pyproject.toml README.md ./
 
 # Copy full project source
 COPY . .
