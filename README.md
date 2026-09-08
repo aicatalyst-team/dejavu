@@ -1,4 +1,10 @@
-# Deja Vu
+> [!WARNING]
+> **This repository is archived.**
+>
+> Archived on 2026-09-08 by the AI Catalyst Platform Team.
+> It is read-only and no longer maintained.
+
+---# Deja Vu
 
 [![Website](https://img.shields.io/badge/website-deja--vu.dev-0f172a?style=flat-square)](https://deja-vu.dev)
 [![X](https://img.shields.io/badge/@useDejaVu-0f172a?style=flat-square&logo=x&logoColor=white)](https://x.com/useDejaVu)
